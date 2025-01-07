@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +25,7 @@ SECRET_KEY = 'django-insecure-$kp!7e*2sv#%i%=qq(-#pspemkli#ruf_5i04(2q+eeoae_+2h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [] # add your url here
+ALLOWED_HOSTS = []  # add your url here
 
 # Application definition
 
@@ -44,6 +45,12 @@ INSTALLED_APPS = [
     'products',
     'bot_module',
 ]
+
+# Add your bot token and webhook settings
+TELEGRAM_BOT_TOKEN = config("TOKEN_WEB")
+TELEGRAM_WEBHOOK_URL = "https://aghreza01.pythonanywhere.com/webhook/"  # Update with your domain
+# to check if webhook set correctly:
+# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
