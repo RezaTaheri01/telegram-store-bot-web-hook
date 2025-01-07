@@ -114,10 +114,10 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
    python manage.py createsuperuser
    ```
 
-6. Add your domain to **ALLOWED_HOSTS in Settings** and to **set_webhook.py** after that:
+6. Add your domain to **TELEGRAM_WEBHOOK_URL** in settings.py:
 
    ```bash
-   python set_websocket.py
+   python manage.py --action set
    ```
 
 7. **Run the Django Development Server**:
