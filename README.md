@@ -97,7 +97,7 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
 
    - Create a `.env` file in the root directory with the following structure:
      ```env
-     TOKEN=<your-telegram-bot-token>
+     TOKEN_WEB=<your-telegram-bot-token>
      ```
 
 5. **Migrate the Database** and **Create Super User**:
