@@ -1,23 +1,70 @@
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from telegram import Update, Bot
-
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from django.conf import settings
 
-bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+# Build the bot application
+app = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
+
+
+# Define command handler
+async def start(update: Update, context):
+    """
+    Handle the /start command.
+    """
+    await update.message.reply_text("Welcome! I am your bot. How can I assist you?")
+
+
+# Define a message handler
+async def echo(update: Update, context):
+    """
+    Echo back any text message sent by the user.
+    """
+    text = update.message.text
+    await update.message.reply_text(f"You said: {text}")
+
+
+# Add handlers to the Application instance
+app.add_handler(CommandHandler("start", start))  # Handle /start command
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))  # Handle all text messages
 
 
 @csrf_exempt
-def webhook(request):
+async def webhook(request):
+    """
+    Handle incoming Telegram webhook requests asynchronously.
+    """
     if request.method == "POST":
-        update = Update.de_json(json.loads(request.body), bot)
-        if update.message:  # Check if it's a message update
-            chat_id = update.message.chat.id
-            text = update.message.text
+        try:
+            # Parse the incoming update
+            update = Update.de_json(json.loads(request.body), app.bot)
 
-            # Respond to the message
-            bot.send_message(chat_id=chat_id, text=f"You said: {text}")
+            # Ensure the application is initialized
+            if not app.running:
+                await app.initialize()  # Initialize the application
+                await app.start()  # Start background tasks if needed
 
-        return JsonResponse({"status": "ok"})
+            # Process the update with the Application instance
+            await app.process_update(update)
+
+            return JsonResponse({"status": "ok"})
+        except Exception as e:
+            logging.error(f"Error handling webhook: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+# Optional: Shut down the application gracefully on server stop
+import atexit
+
+
+@atexit.register
+def cleanup():
+    import asyncio
+    asyncio.run(app.shutdown())
