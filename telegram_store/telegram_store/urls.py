@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from bot_module.views import webhook
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('payment/', include('payment.urls')),
-    path('telegram_bot/', include('bot_module.urls')),
+    path('webhook/', webhook, name='webhook'),
     path('', views.HomePage.as_view(), name="home_page"),
 ]
