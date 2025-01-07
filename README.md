@@ -62,6 +62,7 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
 
 ### Prerequisites 🔎
 
+0. Need a domain that suport https
 1. Python 3.8 or higher 💾
 2. Django (latest version recommended) ⬆️
 3. PostgreSQL or any preferred database system configured in Django ([Learn More](https://docs.djangoproject.com/en/5.1/ref/databases/))
@@ -113,19 +114,19 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
    python manage.py createsuperuser
    ```
 
-   **add your domain to ALLOWED_HOSTS in Settings and to set_webhook.py after that:**
+6. Add your domain to **ALLOWED_HOSTS in Settings** and to **set_webhook.py** after that:
 
-  ```bash
-  python set_websocket.py
-  ```
+   ```bash
+   python set_websocket.py
+   ```
 
-6. **Run the Django Development Server**:
+7. **Run the Django Development Server**:
 
    ```bash
    python manage.py runserver
    ```
 
-7. **Run the Telegram Bot**:
+8. **Run the Telegram Bot**:
    ```bash
    python bot.py
    ```
