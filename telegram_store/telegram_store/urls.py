@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from bot_module.views import webhook
+# from bot_module.views import webhook # Simple
+from bot_module.bot import webhook  # Game Store
 
 urlpatterns = [
     path('admin/', admin.site.urls),
