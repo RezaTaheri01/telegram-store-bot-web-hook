@@ -62,7 +62,7 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
 
 ### Prerequisites 🔎
 
-0. Need a domain that suport https
+0. Need a domain that supports https
 1. Python 3.8 or higher 💾
 2. Django (latest version recommended) ⬆️
 3. PostgreSQL or any preferred database system configured in Django ([Learn More](https://docs.djangoproject.com/en/5.1/ref/databases/))
