@@ -166,7 +166,5 @@ cython_debug/
 /telegram_store/products/migrations
 /telegram_store/production_files
 *.zip
-telegram_store/bot_module/bot_orig.py
 /telegram_store/bot_module/migrations
-/telegram_store/bot_module/mybot.py
 telegram_store/bot_module/bot.py
