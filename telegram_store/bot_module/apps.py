@@ -1,4 +1,6 @@
 from django.apps import AppConfig
+import asyncio
+from bot_module.bot import app  # Import the global app instance
 
 
 class BotModuleConfig(AppConfig):
@@ -8,11 +10,13 @@ class BotModuleConfig(AppConfig):
     def ready(self):
         # Initialize the bot application once
         # from bot_module.bot import app  # Import the global app instance
-        from bot_module.views import app  # Import the global app instance
+        from bot_module.bot import app  # Import the global app instance
         import asyncio
 
         async def start_bot():
-            await app.initialize()
-            await app.start()
+            if not app.running:
+                await app.initialize()
+                await app.start()
 
         asyncio.run(start_bot())
+
