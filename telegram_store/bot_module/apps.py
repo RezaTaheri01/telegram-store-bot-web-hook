@@ -1,6 +1,4 @@
 from django.apps import AppConfig
-import asyncio
-from bot_module.bot import app  # Import the global app instance
 
 
 class BotModuleConfig(AppConfig):
@@ -19,4 +17,3 @@ class BotModuleConfig(AppConfig):
                 await app.start()
 
         asyncio.run(start_bot())
-
