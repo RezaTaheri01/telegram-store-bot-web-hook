@@ -1,5 +1,3 @@
-# Todo: prevent the variables from being overwritten each time the webhook is called
-import json
 import asyncio
 from .bot_settings import *
 from telegram.error import NetworkError
@@ -7,8 +5,6 @@ from telegram.error import NetworkError
 
 # region Django Imports
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from users.models import UserData
 from payment.models import Transactions
@@ -86,7 +82,8 @@ async def start_menu(update: Update, context: CallbackContext) -> None:  # activ
             # Optionally, you can just pass if you don't want to log or handle the error
             pass
         else:
-            await update.message.reply_text(texts[usr_lng]["textError"], reply_markup=buttons[usr_lng]["main_menu_markup"])
+            await update.message.reply_text(texts[usr_lng]["textError"],
+                                            reply_markup=buttons[usr_lng]["main_menu_markup"])
             logger.error(f"Error in start_menu function: {e}")
 
 
@@ -136,7 +133,8 @@ async def user_balance(update: Update, context: CallbackContext) -> None:
             # Optionally, you can just pass if you don't want to log or handle the error
             pass
         else:
-            await update.message.reply_text(texts[usr_lng]["textError"], reply_markup=buttons[usr_lng]["back_menu_markup"])
+            await update.message.reply_text(texts[usr_lng]["textError"],
+                                            reply_markup=buttons[usr_lng]["back_menu_markup"])
             logger.error(f"Error in user_balance function: {e}")
 
 
@@ -641,7 +639,8 @@ async def payment(update: Update, context: CallbackContext, query: CallbackQuery
             # Optionally, you can just pass if you don't want to log or handle the error
             pass
         else:
-            await update.message.reply_text(texts[usr_lng]["textError"], reply_markup=buttons[usr_lng]["back_menu_markup"])
+            await update.message.reply_text(texts[usr_lng]["textError"],
+                                            reply_markup=buttons[usr_lng]["back_menu_markup"])
             logger.error(f"Error in payment function: {e}")
 
 
@@ -759,46 +758,11 @@ app.add_handlers(handlers)
 
 app.add_error_handler(error_handler)
 
-
-@csrf_exempt
-async def webhook(request):
-    """
-    Handle incoming Telegram webhook requests asynchronously.
-    """
-    if request.method == "POST":
-        try:
-            # Parse the incoming update
-            update = Update.de_json(json.loads(request.body), app.bot)
-
-            # Ensure the application is initialized
-            if not app.running:
-                await app.initialize()  # Initialize the application
-                await app.start()  # Start background tasks if needed
-
-            # Check if the event loop is still open
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-            # Process the update with the Application instance
-            await app.process_update(update)
-
-            return JsonResponse({"status": "ok"})
-        except Exception as e:
-            logging.error(f"Error handling webhook: {e}")
-            return JsonResponse({"error": str(e)}, status=500)
-    return JsonResponse({"error": "Invalid request"}, status=400)
-
-
-# endregion
-
-
 # Optional: Shut down the application gracefully on server stop
-import atexit
-
-
-@atexit.register
-def cleanup():
-    import asyncio
-    asyncio.run(app.shutdown())
+# import atexit
+#
+#
+# @atexit.register
+# def cleanup():
+#     import asyncio
+#     asyncio.run(app.shutdown())
