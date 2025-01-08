@@ -45,11 +45,6 @@ async def webhook(request):
             # Parse the incoming update
             update = Update.de_json(json.loads(request.body), app.bot)
 
-            # Ensure the application is initialized
-            if not app.running:
-                await app.initialize()  # Initialize the application
-                await app.start()  # Start background tasks if needed
-
             # Process the update with the Application instance
             await app.process_update(update)
 
