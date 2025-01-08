@@ -117,7 +117,7 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
 6. Add your domain to **TELEGRAM_WEBHOOK_URL** in settings.py:
 
    ```bash
-   python manage.py --action set
+   python manage.py set_webhook --action set
    ```
 
 7. **Run the Django Development Server**:
