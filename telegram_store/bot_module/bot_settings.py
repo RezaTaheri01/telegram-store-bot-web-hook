@@ -183,7 +183,7 @@ for key, value in texts.items():
         [InlineKeyboardButton(texts[key]["buttonCategories"], callback_data=categories_cb)],
         [InlineKeyboardButton(texts[key]["buttonLanguage"
                                          ""], callback_data=change_lang_cb)],
-        [InlineKeyboardButton(texts[key]["buttonDeposit"], callback_data=deposit_cb)],
+        # [InlineKeyboardButton(texts[key]["buttonDeposit"], callback_data=deposit_cb)],
     ]
     buttons[key]["main_menu_markup"] = InlineKeyboardMarkup(main_menu_keys)
 
