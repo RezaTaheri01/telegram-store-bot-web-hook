@@ -27,8 +27,11 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
-# Application definition
+CSRF_TRUSTED_ORIGINS = [
+    config("PAYMENT_DOMAIN"),  # Replace with your Cloudflare tunnel URL
+]
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
