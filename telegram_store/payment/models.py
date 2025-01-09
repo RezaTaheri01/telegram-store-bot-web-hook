@@ -1,7 +1,7 @@
 from django.db import models
 from users.models import UserData
 from django.utils import timezone
-from bot_module.bot_settings import valid_link_in_seconds
+from bot_settings import valid_link_in_seconds
 
 
 # Create your models here.
