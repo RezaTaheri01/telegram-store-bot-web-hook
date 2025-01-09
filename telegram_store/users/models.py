@@ -1,5 +1,5 @@
 from django.db import models
-from bot_module.bot_settings import lang1
+from bot_settings import lang1
 
 
 # Create your models here.
