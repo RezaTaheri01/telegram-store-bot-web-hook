@@ -40,9 +40,9 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    DEBUG_WEBHOOK=True
    ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
    ALLOWED_HOSTS_WEBHOOK=localhost,127.0.0.1,your-domain.com
-   WEBHOOK_URL=https://your-domain.com/webhook/
+   WEBHOOK_URL=https://your-domain.com
    WEBHOOK_PORT=8000
-   PAYMENT_DOMAIN=http://127.0.0.1:8001/  # Include trailing slash
+   PAYMENT_DOMAIN=http://127.0.0.1:8001
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
