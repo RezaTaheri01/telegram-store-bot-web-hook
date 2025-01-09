@@ -1,5 +1,5 @@
 
-# Telegram Bot with Django Integration 📢💻  
+# Telegram Bot with Django Integration Web Hook 📢💻  
 
 A Python-based Telegram bot integrated with a Django backend, featuring webhook support with Uvicorn, user interactions, payments, and product management.  
 
