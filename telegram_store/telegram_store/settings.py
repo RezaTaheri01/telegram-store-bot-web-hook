@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$kp!7e*2sv#%i%=qq(-#pspemkli#ruf_5i04(2q+eeoae_+2h'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-$kp!7e*2sv#%i%=qq(-#pspemkli#ruf_5i04(2q+eeoae_+2h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []  # add your url here
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 # Application definition
 
@@ -43,12 +43,8 @@ INSTALLED_APPS = [
     'users',
     'payment',
     'products',
-    'bot_module',
 ]
 
-# Add your bot token and webhook settings
-TELEGRAM_BOT_TOKEN = config("TOKEN_WEB")
-TELEGRAM_WEBHOOK_URL = "https://aghreza01.pythonanywhere.com/webhook/"  # Update with your domain
 # to check if webhook set correctly:
 # https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 
@@ -67,8 +63,7 @@ ROOT_URLCONF = 'telegram_store.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,6 +81,7 @@ WSGI_APPLICATION = 'telegram_store.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Change_It
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -114,12 +110,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
+# Change_It
 # Add language here (in both variables)
 LANGUAGES = [
     ('fa', 'فارسی'),  # Persian
     ('en', 'English'),
     ('du', 'German'),
 ]
+# Change_It
 MODELTRANSLATION_LANGUAGES = ('fa', 'en', 'du')  # Same as LANGUAGES
 
 LANGUAGE_CODE = 'en-us'
@@ -133,7 +131,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     BASE_DIR / "static",
 )
@@ -145,4 +143,4 @@ STATIC_ROOT = BASE_DIR / 'production_files'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EJF_ENCRYPTION_KEYS = '6-QgONW6TUl5rt4Xq8u-wBwPcb15sIYS2CN6d69zueM='
+EJF_ENCRYPTION_KEYS = config('ENCRYPTION_KEYS', default='6-QgONW6TUl5rt4Xq8u-wBwPcb15sIYS2CN6d69zueM=')
