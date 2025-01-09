@@ -1,230 +1,81 @@
-# Telegram Bot with Django Integration 📢💻 Web Hook Version
 
-This bot is a Python-based Telegram bot seamlessly integrated with a Django backend. It supports database management, payment handling, digital product selling, and dynamic user interactions.
+# Telegram Bot with Django Integration 📢💻  
 
----
-
-## Features 🏢
-
-### Telegram Bot 📲
-
-- **Multi-language Support**:
-
-  - Currently supports three languages, with the ability to add more.(There is a help comment in bot_settings.py)
-  - Users can change the language via the main menu.
-
-- **User Account Management**:
-
-  - Automatically creates user accounts if they don’t exist.
-  - Retrieves and displays user balance. 💳
-  - Displays user transaction history. 🔄
-
-- **Interactive Menu**:
-
-  - Provides options like **My Account**, **My Balance**, **Deposit**, and **Product Categories**.
-  - Includes inline keyboards for seamless navigation. 📝
-
-- **Payment Handling**:
-
-  - Generates unique payment links. 📡
-  - Processes payments via the Django backend.
-  - Updates user balance upon successful payment. ✔️
-
-- **Product Management**:
-
-  - Dynamically displays categories and products. 🛒
-  - Supports product purchases via balance deduction. 💸
-
-- **Customization**:
-  - In `bot_settings.py`, you can customize:
-    - Number of categories and products displayed per row.
-    - All text messages. 🖊️
-    - Primary and secondary languages.
-    - Inline button text and callback data.
-    - Payment link time limits. ⏳
-
-### Django Backend 📚
-
-- **Database Models**:
-
-  - `UserData`: Manages user account information. By default, the language is set to English (`en`). If your primary language isn’t English, update this in `bot_settings.py` and the database model.
-  - `Transaction`: Tracks payment transactions. 📋
-  - `Category`, `Product`, `ProductDetail`: Manages products and their details. 🛠️
-  - `ProductDetail`: The field detail that contain product info is encrypted 🔒 by ([django-encrypted-json-fields](https://pypi.org/project/django-encrypted-json-fields/))
-
-- **Payment Processing**:
-  - Dynamically creates payment links. 🔗
-  - Updates the database after payment confirmation.
+A Python-based Telegram bot integrated with a Django backend, featuring webhook support with Uvicorn, user interactions, payments, and product management.  
 
 ---
 
-## Installation ⚙️
+## Features 🛠️  
 
-### Prerequisites 🔎
+- **Webhook Integration**: Efficient updates handling with Uvicorn. 🌐  
+- **Multi-language Support**: Easily customizable in `bot_settings.py`. 🌍  
+- **User Management**: Automatic account creation, balance display, and transaction history. 💳  
+- **Payments**: Generate payment links and update balances after successful payments. ✔️  
+- **Products**: Dynamic categories, product listings, and purchases via user balance. 🛒  
 
-0. Need a domain that supports https
-1. Python 3.8 or higher 💾
-2. Django (latest version recommended) ⬆️
-3. PostgreSQL or any preferred database system configured in Django ([Learn More](https://docs.djangoproject.com/en/5.1/ref/databases/))
-4. Required libraries: `python-telegram-bot`, `asgiref`, `python-decouple`, etc.
-5. Dependencies are listed in `req.txt`
+---
 
-### Setup Instructions 🔧
+## Setup 🚀  
 
-1. **Clone the Repository**:
-
+1. **Clone the Repository**:  
    ```bash
-   git clone https://github.com/RezaTaheri01/telegram-store-bot.git
+   git clone https://github.com/RezaTaheri01/telegram-store-bot-web-hook.git
+   cd telegram-store-bot-web-hook/telegram_store
    ```
 
-   ```bash
-   cd telegram-store-bot/telegram_store
-   ```
-
-2. **Install Dependencies**([virtual environment](https://realpython.com/python-virtual-environments-a-primer/#create-it) recommended):
-
+2. **Install Dependencies**:  
    ```bash
    pip install -r req.txt
    ```
 
-3. **Configure Django Settings**:
-
-   - Set the `telegram_store.settings` module:
-     - Change `EJF_ENCRYPTION_KEYS` and `SECRET_KEY`
-   - Configure your database in `settings.py`.
-
-4. **Set Up Environment Variables**:
-
-   - Create a `.env` file in the root directory with the following structure (change all below):
-     ```env
-      TOKEN=<Telegram-API-Token>
-      ADMIN_CHAT_ID=1111111111
-      SECRET_KEY=<Django-Secret-Key>
-      ENCRYPTION_KEYS=<Key-to-encrypte-your-data-with-it>
-      DEBUG=True
-      DEBUG_WEBHOOK=True
-      ALLOWED_HOSTS=localhost,127.0.0.1,ivory-seminars-offset-affecting.trycloudflare.com
-      ALLOWED_HOSTS_WEBHOOK=localhost,127.0.0.1,ivory-seminars-offset-affecting.trycloudflare.com
-      WEBHOOK_URL=https://ivory-seminars-offset-affecting.trycloudflare.com
-      WEBHOOK_PORT=8000
-      # Don't forget last /
-      PAYMENT_DOMAIN=http://127.0.0.1:8001/
-     ```
-
-     **Note**: if running this on localhost. PAYMENT_DOMAIN and WEBHOOK_URL you need tunneling tool like Ngrok or Cloudflare Tunnel
-
-5. **Migrate the Database** and **Create Super User**:
-
-   ```bash
-   python manage.py makemigrations payment users products
+3. **Configure the `.env` File**:  
+   Create a `.env` file in the project root and populate it with the following sample values:  
+   ```env
+   TOKEN=your-telegram-api-token
+   ADMIN_CHAT_ID=123456789
+   SECRET_KEY=your-django-secret-key
+   ENCRYPTION_KEYS=your-encryption-key
+   DEBUG=True
+   DEBUG_WEBHOOK=True
+   ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
+   ALLOWED_HOSTS_WEBHOOK=localhost,127.0.0.1,your-domain.com
+   WEBHOOK_URL=https://your-domain.com/webhook/
+   WEBHOOK_PORT=8000
+   PAYMENT_DOMAIN=http://127.0.0.1:8001/  # Include trailing slash
    ```
 
+   **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
+
+4. **Run Migrations**:  
    ```bash
+   python manage.py makemigrations
    python manage.py migrate
-   ```
-
-   ```bash
    python manage.py createsuperuser
    ```
 
-6. **Run the Django Development Server**:
-
-   ```bash
-   python manage.py runserver 8001
-   ```
-
-7. **Run the Standalone Webhook**:
-   ```bash
-   python bot.py
-   ```
-
----
-
-## Code Overview 🛠️
-
-### Telegram Bot 📲
-
-#### Key Features
-
-- **Imports**:
-
-  - `Django`: Sets up the Django environment for database operations.
-  - `telegram.ext`: Facilitates bot creation and updates handling.
-
-- **Global Variables**:
-
-  - `main_menu_keys`: Defines the main menu layout.
-  - `textStart`, `textBalance`, etc.: Predefined messages for user interactions.
-
-- **Core Functions**:
-  - `start_menu`: Displays the main menu. 🌐
-  - `change_language`: Allows users to change their language and updates the `UserData` language field. 🌎
-  - `check_create_account`: Automatically creates user accounts if they don’t exist. 🔧
-  - `user_balance`: Fetches and displays the user’s balance. 💳
-  - `deposit_money`: Initiates the deposit process and generates payment links. 💵
-  - `charge_account`: Updates the user’s balance upon successful payment. ✔️
-  - `get_name`: Retrieves names based on user language. 🌐
-  - `product_categories`: Dynamically displays product categories. 🛒
-  - `products`: Lists products under a selected category. 🍾
-  - `product_payment_detail`: Displays payment details for a product. 💸
-  - `payment`: Handles product purchases and balance deductions. 💰
-  - `get_user_language`: Retrieves the user’s language from a language cache or the database. 🌐
-
-#### Conversation States
-
-- `ENTER_AMOUNT`: Captures the deposit amount entered by the user. 💵
-
-#### Error Handling 🛠️
-
-- Logs all errors to `logs.log`.
-- Notifies users of issues without disrupting the bot experience. ⚠️
+5. **Start Servers**:  
+   - Django Backend:  
+     ```bash
+     python manage.py runserver 8001
+     ```  
+   - Webhook (Uvicorn):  
+     ```bash
+     python ./bot.py
+     ```
 
 ---
 
-### Payment Link Workflow 🔗
+## Usage 💬  
 
-- **Link Format**:
-  ```
-  http://127.0.0.1:8000/payment/confirm/?chat_id={chat_id}&user_id={user_id}&amount={amount}&bot_link={bot_link}&transaction={transaction}
-  ```
-- Redirects users to a Django view for payment processing.
+1. Start the bot and send `/start`.  
+2. Access features like **My Account**, **Deposit**, and **Product Categories**.  
+3. Use payment links to recharge and purchase products.  
 
 ---
 
-## Usage 🚀
+## Notes 📝  
 
-1. **Start the Bot**:
+- Ensure HTTPS support for webhooks and backend (use a tunneling tool for localhost).  
+- Update `WEBHOOK_URL` and `PAYMENT_DOMAIN` for production deployment.  
 
-   - Send `/start` to the bot. 📢
-   - Explore options like **My Account**, **My Balance**, **Deposit**, or **Product Categories**.
-
-2. **Deposit Money**:
-
-   - Select the **Deposit** option from the menu. 💵
-   - Enter the desired amount.
-   - Click the payment link to complete the transaction. ✔️
-   - Verify the updated balance in your account. 💳
-
-3. **Browse Products**:
-   - Select **Product Categories** from the menu. 🛒
-   - Choose a category and view available products. 🍾
-   - Purchase a product using your balance. 💰
-
----
-
-## Logs 🔍
-
-- All errors are logged in `logs.log` with detailed messages. 📄
-
----
-
-## Notes 📊
-
-- Ensure the Django server is running for smooth payment processing. ⚙️
-- Update the `payment_url` in the bot code to match your server’s address when deploying. 🔗
-
----
-
-## License 🔒
-
-This project is licensed under the MIT License. See the [`LICENSE`](https://github.com/RezaTaheri01/telegram-store-bot/blob/main/LICENSE) file for more details. 🔖
+--- 
