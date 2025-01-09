@@ -95,10 +95,23 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
 
 4. **Set Up Environment Variables**:
 
-   - Create a `.env` file in the root directory with the following structure:
+   - Create a `.env` file in the root directory with the following structure (change all below):
      ```env
-     TOKEN_WEB=<your-telegram-bot-token>
+      TOKEN=<Telegram-API-Token>
+      ADMIN_CHAT_ID=1111111111
+      SECRET_KEY=<Django-Secret-Key>
+      ENCRYPTION_KEYS=<Key-to-encrypte-your-data-with-it>
+      DEBUG=True
+      DEBUG_WEBHOOK=True
+      ALLOWED_HOSTS=localhost,127.0.0.1,ivory-seminars-offset-affecting.trycloudflare.com
+      ALLOWED_HOSTS_WEBHOOK=localhost,127.0.0.1,ivory-seminars-offset-affecting.trycloudflare.com
+      WEBHOOK_URL=https://ivory-seminars-offset-affecting.trycloudflare.com
+      WEBHOOK_PORT=8000
+      # Don't forget last /
+      PAYMENT_DOMAIN=http://127.0.0.1:8001/
      ```
+
+     **Note**: if running this on localhost. PAYMENT_DOMAIN and WEBHOOK_URL you need tunneling tool like Ngrok or Cloudflare Tunnel
 
 5. **Migrate the Database** and **Create Super User**:
 
@@ -114,19 +127,13 @@ This bot is a Python-based Telegram bot seamlessly integrated with a Django back
    python manage.py createsuperuser
    ```
 
-6. Add your domain to **TELEGRAM_WEBHOOK_URL** in settings.py:
+6. **Run the Django Development Server**:
 
    ```bash
-   python manage.py set_webhook --action set
+   python manage.py runserver 8001
    ```
 
-7. **Run the Django Development Server**:
-
-   ```bash
-   python manage.py runserver
-   ```
-
-8. **Run the Telegram Bot**:
+7. **Run the Standalone Webhook**:
    ```bash
    python bot.py
    ```
