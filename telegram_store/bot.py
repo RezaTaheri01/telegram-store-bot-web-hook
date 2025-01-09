@@ -1,23 +1,73 @@
+# cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
+# standalone Django app for webhook
+# !/usr/bin/env python
+# This program is dedicated to the public domain under the CC0 license.
+# pylint: disable=import-error,unused-argument
+
+"""
+Simple example of a bot that uses a custom webhook setup and handles custom updates.
+For the custom webhook setup, the libraries `Django` and `uvicorn` are used. Please
+install them as `pip install Django~=4.2.4 uvicorn~=0.23.2`.
+Note that any other `asyncio` based web server framework can be used for a custom webhook setup
+just as well.
+
+Usage:
+Set bot Token, URL, admin CHAT_ID and PORT after the imports.
+You may also need to change the `listen` value in the uvicorn configuration to match your setup.
+Press Ctrl-C on the command line or send a signal to the process to stop the bot.
+"""
+
+from uuid import uuid4
+
+from bot_settings import *
+from asgiref.sync import sync_to_async
+from django.utils import timezone
+from decouple import config
+
 import asyncio
-from .bot_settings import *
-from telegram.error import NetworkError
-# from channels.db import database_sync_to_async
+import html
+import json
+import uvicorn
+from dataclasses import dataclass
 
 # region Django Imports
-from django.utils import timezone
+
+import django
+from telegram_store import settings as main_settings
+from django.conf import settings
+from django.urls import path
+
+from django.views.decorators.csrf import csrf_exempt
+from django.core.asgi import get_asgi_application
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+
+settings.configure(
+    SECRET_KEY=uuid4().hex,
+    ROOT_URLCONF=__name__,
+    DEBUG=config('DEBUG_WEBHOOK', default=False, cast=bool),
+    ALLOWED_HOSTS=config('ALLOWED_HOSTS_WEBHOOK', default='').split(','),
+    DATABASES=main_settings.DATABASES,
+    INSTALLED_APPS=main_settings.INSTALLED_APPS,
+    LANGUAGES=main_settings.LANGUAGES,
+    MIDDLEWARE=main_settings.MIDDLEWARE,
+    EJF_ENCRYPTION_KEYS=main_settings.EJF_ENCRYPTION_KEYS,
+)
+
+django.setup()
 
 from users.models import UserData
 from payment.models import Transactions
 from products.models import Category, Product, ProductDetail
-from django.conf import settings
+
 # endregion
 
 
 # region Telegram Imports
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Bot
+
+from telegram.constants import ParseMode
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from telegram.ext import (
     Application,
-    ApplicationBuilder,
     CommandHandler,
     CallbackQueryHandler,
     ConversationHandler,
@@ -25,38 +75,43 @@ from telegram.ext import (
     filters,
     CallbackContext,
     ContextTypes,
+    ExtBot
 )
-from asgiref.sync import sync_to_async
+
 # endregion
 
 
-# region Logs
+# region logging
+
 import logging
 
-# Log errors
-logger = logging.getLogger(__name__)
-
-# Set up logging
+# Enable logging
 logging.basicConfig(
-    filename='./bot_logs.log',
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.WARN
+    filename="webhook_bot.log",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
+# set higher logging level for httpx to avoid all GET and POST requests being logged
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
 
 # endregion
 
 
 # region Global Variables
 
-# Build the bot application
-app: Application = ApplicationBuilder().token(token=settings.TELEGRAM_BOT_TOKEN).build()
+# Define configuration constants
+URL = config('WEBHOOK_URL', default=f'http://127.0.0.1')
+ADMIN_CHAT_ID = config("ADMIN_CHAT_ID")
+PORT = int(config('WEBHOOK_PORT', default='8000'))
+TOKEN = config("TOKEN")
 
 # Define states
 ENTER_AMOUNT = 1
 
 bot_username = ""
 
-# Todo: implement aging for better memory usage
+# # Todo: implement aging for better memory usage
 language_cache: dict = {}
 
 
@@ -77,14 +132,8 @@ async def start_menu(update: Update, context: CallbackContext) -> None:  # activ
         )
         await update.message.delete()
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await update.message.reply_text(texts[usr_lng]["textError"],
-                                            reply_markup=buttons[usr_lng]["main_menu_markup"])
-            logger.error(f"Error in start_menu function: {e}")
+        await error_message(update=update, usr_lng=usr_lng)
+        logger.error(f"Error in start_menu function: {e}")
 
 
 async def menu_from_callback(query: CallbackQuery) -> None:
@@ -95,14 +144,8 @@ async def menu_from_callback(query: CallbackQuery) -> None:
             reply_markup=buttons[usr_lng]["main_menu_markup"],
         )
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await query.edit_message_text(texts[usr_lng]["textError"],
-                                          reply_markup=buttons[usr_lng]["main_menu_markup"])
-            logger.error(f"Error in menu_from_callback function: {e}")
+        await error_message(query=query, usr_lng=usr_lng)
+        logger.error(f"Error in menu_from_callback function: {e}")
 
 
 # endregion
@@ -128,14 +171,8 @@ async def user_balance(update: Update, context: CallbackContext) -> None:
             reply_markup=buttons[usr_lng]["back_menu_markup"])
         await update.message.delete()
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await update.message.reply_text(texts[usr_lng]["textError"],
-                                            reply_markup=buttons[usr_lng]["back_menu_markup"])
-            logger.error(f"Error in user_balance function: {e}")
+        await error_message(update=update, usr_lng=usr_lng)
+        logger.error(f"Error in user_balance function: {e}")
 
 
 async def user_balance_from_call_back(update: Update, query: CallbackQuery) -> None:
@@ -154,14 +191,8 @@ async def user_balance_from_call_back(update: Update, query: CallbackQuery) -> N
             text=texts[usr_lng]["textBalance"].format(balance, texts[usr_lng]["textPriceUnit"]),
             reply_markup=buttons[usr_lng]["back_menu_markup"])
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await query.edit_message_text(texts[usr_lng]["textError"],
-                                          reply_markup=buttons[usr_lng]["back_menu_markup"])
-            logger.error(f"Error in user_balance_from_call_back function: {e}")
+        await error_message(query=query, usr_lng=usr_lng)
+        logger.error(f"Error in user_balance_from_call_back function: {e}")
 
 
 # endregion
@@ -178,14 +209,8 @@ async def account_menu_call_back(query: CallbackQuery):
             reply_markup=buttons[usr_lng]["account_keys_markup"],
         )
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await query.edit_message_text(texts[usr_lng]["textError"],
-                                          reply_markup=buttons[usr_lng]["back_menu_markup"])
-            logger.error(f"Error in menu_from_callback function: {e}")
+        await error_message(query=query, usr_lng=usr_lng)
+        logger.error(f"Error in menu_from_callback function: {e}")
 
 
 async def account_info(query: CallbackQuery) -> None:
@@ -250,7 +275,7 @@ async def account_transactions(query: CallbackQuery) -> None:
         total_pages = (total_transactions + number_of_transaction - 1) // number_of_transaction
 
         # Page number
-        result_data = texts[usr_lng]["textTransaction"].format(current_page)
+        result_data = texts[usr_lng]["textTransaction"].format(f"{current_page}/{total_pages}")
         result_data += "\n\n"
         for t in user_transaction:
             # Format paid_time using strftime
@@ -298,35 +323,6 @@ async def account_transactions(query: CallbackQuery) -> None:
 
     except Exception as e:
         logger.error(f"Error in account_info function: {e}")
-
-
-# Create a user account if it doesn't exist
-async def check_create_account(update: Update) -> None:
-    user_id = update.effective_user.id
-    usr_lng = await user_language(user_id)
-    found: bool = await sync_to_async(UserData.objects.filter(id=user_id).exists, thread_sensitive=True)()
-
-    if not found:
-        try:
-            first_name = update.effective_user.first_name or None
-            last_name = update.effective_user.last_name or None
-            username = update.effective_user.username or None
-
-            new_user = UserData(
-                id=update.effective_user.id,
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-            )
-            await sync_to_async(new_user.save, thread_sensitive=True)()
-        except Exception as e:
-            # Check if it's a NetworkError and skip logging it
-            if isinstance(e, NetworkError):
-                # Optionally, you can just pass if you don't want to log or handle the error
-                pass
-            else:
-                await update.message.reply_text(texts[usr_lng]["textError"])
-                logger.error(f"Error in check_create_account function: {e}")
 
 
 async def change_user_language(query: CallbackQuery):
@@ -580,14 +576,9 @@ async def product_payment_detail(query: CallbackQuery):
             reply_markup=temp_reply_markup
         )
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            # await query.edit_message_text(textError, reply_markup=back_menu_markup)
-            await query.answer(texts[usr_lng]["textNotFound"], show_alert=True)
-            logger.error(f"Error in product_payment_detail function: {e}")
+        await error_message(query=query, usr_lng=usr_lng)
+        await query.answer(texts[usr_lng]["textNotFound"], show_alert=True)
+        logger.error(f"Error in product_payment_detail function: {e}")
 
 
 async def payment(update: Update, context: CallbackContext, query: CallbackQuery):
@@ -634,20 +625,87 @@ async def payment(update: Update, context: CallbackContext, query: CallbackQuery
                                       text=texts[usr_lng]["textProductDetail"].format(product.details))
         # await query.delete_message()
     except Exception as e:
-        # Check if it's a NetworkError and skip logging it
-        if isinstance(e, NetworkError):
-            # Optionally, you can just pass if you don't want to log or handle the error
-            pass
-        else:
-            await update.message.reply_text(texts[usr_lng]["textError"],
-                                            reply_markup=buttons[usr_lng]["back_menu_markup"])
-            logger.error(f"Error in payment function: {e}")
+        await error_message(update=update, usr_lng=usr_lng)
+        logger.error(f"Error in payment function: {e}")
 
 
 # endregion
 
 
+# region Common Functions
+
+# # Create a user account if it doesn't exist
+async def check_create_account(update: Update) -> None:
+    user_id = update.effective_user.id
+    usr_lng = await user_language(user_id)
+    found: bool = await sync_to_async(UserData.objects.filter(id=user_id).exists, thread_sensitive=True)()
+
+    if not found:
+        try:
+            first_name = update.effective_user.first_name or None
+            last_name = update.effective_user.last_name or None
+            username = update.effective_user.username or None
+
+            new_user = UserData(
+                id=update.effective_user.id,
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+            )
+            await sync_to_async(new_user.save, thread_sensitive=True)()
+        except Exception as e:
+            await update.message.reply_text(texts[usr_lng]["textError"])
+            logger.error(f"Error in check_create_account function: {e}")
+
+
+async def user_language(user_id: int, cache: bool = True):
+    date_now = timezone.now().date()
+    if user_id not in language_cache or not cache:
+        user = await sync_to_async(UserData.objects.filter(id=user_id).first, thread_sensitive=True)()
+        if not user:
+            language_cache[user_id] = (lang1, date_now)
+            return lang1
+        language_cache[user_id] = (user.language, date_now)
+        # print(language_cache)
+        # print(sys.getsizeof(language_cache))
+        return user.language
+    else:
+        # reset aging
+        # language_cache[user_id] = (language_cache[user_id][0], date_now)
+        return language_cache[user_id][0]
+
+
+async def error_message(update: Update = None, query: CallbackQuery = None, usr_lng: str = "en"):
+    if update:
+        await update.message.reply_text(texts[usr_lng]["textError"],
+                                        reply_markup=buttons[usr_lng]["main_menu_markup"])
+    elif query:
+        await query.edit_message_text(texts[usr_lng]["textError"],
+                                      reply_markup=buttons[usr_lng]["main_menu_markup"])
+
+
+async def send_message_with_retry(current_bot, chat_id, text, retry=3):
+    for attempt in range(retry):
+        try:
+            return await current_bot.send_message(chat_id=chat_id, text=text)
+        except Exception as e:
+            if attempt < retry - 1:
+                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                logger.error(
+                    f"Failed to send message after {retry} attempts: {e}")
+                return None
+
+
+# For unknown commands and texts
+# async def delete_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     await update.message.delete()
+
+# endregion
+
+
 # region Handlers
+
 async def callback_query_handler(update: Update, context: CallbackContext) -> None:
     query: CallbackQuery = update.callback_query
     query_data = query.data
@@ -692,43 +750,110 @@ async def error_handler(update: Update, context: CallbackContext):
 # endregion
 
 
-# For unknown commands and texts
-# async def delete_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     await update.message.delete()
+# region etc
+@dataclass
+class WebhookUpdate:
+    """Simple dataclass to wrap a custom update type"""
+
+    user_id: int
+    payload: str
 
 
-# Todo: use cachetools for an LRU (Least Recently Used) cache to manage memory effectively.
-async def user_language(user_id: int, cache: bool = True):
-    date_now = timezone.now().date()
-    if user_id not in language_cache or not cache:
-        user = await sync_to_async(UserData.objects.filter(id=user_id).first, thread_sensitive=True)()
-        if not user:
-            language_cache[user_id] = (lang1, date_now)
-            return lang1
-        language_cache[user_id] = (user.language, date_now)
-        # print(language_cache)
-        # print(sys.getsizeof(language_cache))
-        return user.language
-    else:
-        # reset aging
-        # language_cache[user_id] = (language_cache[user_id][0], date_now)
-        return language_cache[user_id][0]
+class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
+    """
+    Custom CallbackContext class that makes `user_data` available for updates of type
+    `WebhookUpdate`.
+    """
+
+    @classmethod
+    def from_update(
+            cls,
+            update: object,
+            application: "Application",
+    ) -> "CustomContext":
+        if isinstance(update, WebhookUpdate):
+            return cls(application=application, user_id=update.user_id)
+        return super().from_update(update, application)
 
 
-async def send_message_with_retry(current_bot, chat_id, text, retry=3):
-    for attempt in range(retry):
-        try:
-            return await current_bot.send_message(chat_id=chat_id, text=text)
-        except Exception as e:
-            if attempt < retry - 1:
-                await asyncio.sleep(2 ** attempt)  # Exponential backoff
-            else:
-                logger.error(
-                    f"Failed to send message after {retry} attempts: {e}")
-                return None
+async def start(update: Update, context: CustomContext) -> None:
+    print("START")
+    """Display a message with instructions on how to use this bot."""
+    payload_url = html.escape(f"{URL}/submitpayload?user_id=<your user id>&payload=<payload>")
+    text = (
+        f"To check if the bot is still running, call <code>{URL}/healthcheck</code>.\n\n"
+        f"To post a custom update, call <code>{payload_url}</code>."
+    )
+    await update.message.reply_html(text=text)
 
 
-# region Main
+async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
+    """Handle custom updates."""
+    chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
+    payloads = context.user_data.setdefault("payloads", [])
+    payloads.append(update.payload)
+    combined_payloads = "</code>\n• <code>".join(payloads)
+    text = (
+        f"The user {chat_member.user.mention_html()} has sent a new payload. "
+        f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
+    )
+    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=text, parse_mode=ParseMode.HTML)
+
+
+@csrf_exempt
+async def telegram(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        return HttpResponse()
+
+    print("Telegram")
+    try:
+        """Handle incoming Telegram updates by putting them into the `update_queue`"""
+        await ptb_application.update_queue.put(
+            Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
+        )
+    except Exception as e:
+        logger.error(f"Error in ptb_application.update_queue.put: {e}")
+
+    return HttpResponse()
+
+
+@csrf_exempt
+async def custom_updates(request: HttpRequest) -> HttpResponse:
+    """
+    Handle incoming webhook updates by also putting them into the `update_queue` if
+    the required parameters were passed correctly.
+    """
+    try:
+        user_id = int(request.GET["user_id"])
+        payload = request.GET["payload"]
+    except KeyError:
+        return HttpResponseBadRequest(
+            "Please pass both `user_id` and `payload` as query parameters.",
+        )
+    except ValueError:
+        return HttpResponseBadRequest("The `user_id` must be a string!")
+
+    await ptb_application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
+    return HttpResponse()
+
+
+@csrf_exempt
+async def health(_: HttpRequest) -> HttpResponse:
+    """For the health endpoint, reply with a simple plain text message."""
+    return HttpResponse("The bot is still running fine :)")
+
+
+# endregion
+
+# Set up PTB application and a web application for handling the incoming requests.
+context_types = ContextTypes(context=CustomContext)
+# Here we set updater to None because we want our custom webhook server to handle the updates
+# and hence we don't need an Updater instance
+ptb_application = (
+    Application.builder().token(TOKEN).updater(None).context_types(context_types).build()
+)
+
+# register handlers
 handlers = [
     # Check account or create only here
     CommandHandler("start", start_menu),
@@ -754,15 +879,44 @@ handlers = [
     CallbackQueryHandler(callback_query_handler),
 ]
 
-app.add_handlers(handlers)
+ptb_application.add_handlers(handlers)
 
-app.add_error_handler(error_handler)
+ptb_application.add_error_handler(error_handler)
 
-# Optional: Shut down the application gracefully on server stop
-# import atexit
-#
-#
-# @atexit.register
-# def cleanup():
-#     import asyncio
-#     asyncio.run(app.shutdown())
+# ptb_application.add_handler(CommandHandler("start", start))
+
+# ptb_application.add_handler(CommandHandler("menu", start_menu))
+
+# ptb_application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
+
+
+urlpatterns = [
+    path("telegram", telegram, name="Telegram updates"),
+    path("submitpayload", custom_updates, name="custom updates"),
+    path("healthcheck", health, name="health check"),
+]
+
+
+async def main() -> None:
+    """Finalize configuration and run the applications."""
+    webserver = uvicorn.Server(
+        config=uvicorn.Config(
+            app=get_asgi_application(),
+            port=PORT,
+            use_colors=False,
+            host="127.0.0.1",
+        )
+    )
+
+    # Pass webhook settings to telegram
+    await ptb_application.bot.set_webhook(url=f"{URL}/telegram", allowed_updates=Update.ALL_TYPES)
+
+    # Run application and webserver together
+    async with ptb_application:
+        await ptb_application.start()
+        await webserver.serve()
+        await ptb_application.stop()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
