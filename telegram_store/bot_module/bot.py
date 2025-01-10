@@ -1,10 +1,15 @@
 # to check if webhook set correctly:
 # https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 # cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
-# standalone Django app for webhook
-# !/usr/bin/env python
 # This program is dedicated to the public domain under the CC0 license.
 # pylint: disable=import-error,unused-argument
+
+# Warning showed on render.com deployment
+# Todo: /opt/render/project/src/.venv/lib/python3.11/site-packages/django/http/response.py:517:
+#   Warning: StreamingHttpResponse must consume synchronous iterators in order to serve them asynchronously.
+#   Use an asynchronous iterator instead
+# For port binding
+# Todo: https://render.com/docs/web-services#port-binding
 
 """
 Simple example of a bot that uses a custom webhook setup and handles custom updates.
@@ -783,16 +788,16 @@ async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
 
 @csrf_exempt
 async def telegram(request: HttpRequest) -> HttpResponse:
-    logger.info(f"Received: {request.body}")
+    # logger.info(f"Received: {request.body}")
     if request.method == "GET":
         return HttpResponse(status=404)
 
     logger.info("Telegram")
     try:
         """Handle incoming Telegram updates by putting them into the `update_queue`"""
-        update = Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
-        logger.info(update.effective_user.id)
-        logger.info(update.effective_user.username)
+        # update = Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
+        # logger.info(update.effective_user.id)
+        # logger.info(update.effective_user.username)
         await ptb_application.update_queue.put(
             Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
         )
