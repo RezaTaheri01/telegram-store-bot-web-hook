@@ -786,6 +786,7 @@ async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=text, parse_mode=ParseMode.HTML)
 
 
+# Todo: Move these 3 functions to view.py
 @csrf_exempt
 async def telegram(request: HttpRequest) -> HttpResponse:
     # logger.info(f"Received: {request.body}")
