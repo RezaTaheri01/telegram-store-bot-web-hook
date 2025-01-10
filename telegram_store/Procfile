@@ -1,1 +1,2 @@
-web: uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 10000
+web: bash -c "python manage.py migrate && uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 10000"
+
