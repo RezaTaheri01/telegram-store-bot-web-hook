@@ -68,7 +68,7 @@ import logging
 
 # Enable logging
 logging.basicConfig(
-    filename="webhook_bot.log",
+    # filename="webhook_bot.log",
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 # set higher logging level for httpx to avoid all GET and POST requests being logged
@@ -783,12 +783,16 @@ async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
 
 @csrf_exempt
 async def telegram(request: HttpRequest) -> HttpResponse:
+    logger.info(f"Received: {request.body}")
     if request.method == "GET":
         return HttpResponse(status=404)
 
     logger.info("Telegram")
     try:
         """Handle incoming Telegram updates by putting them into the `update_queue`"""
+        update = Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
+        logger.info(update.effective_user.id)
+        logger.info(update.effective_user.username)
         await ptb_application.update_queue.put(
             Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
         )
