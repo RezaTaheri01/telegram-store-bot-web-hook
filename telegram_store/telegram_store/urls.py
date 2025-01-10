@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('payment/', include('payment.urls')),
     path('', views.HomePage.as_view(), name="home_page"),
+    path('webhook/', include("bot_module.urls")),
 ]
