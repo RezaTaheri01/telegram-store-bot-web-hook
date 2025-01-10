@@ -1,3 +1,5 @@
+# to check if webhook set correctly:
+# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 # cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
 # standalone Django app for webhook
 # !/usr/bin/env python
@@ -882,7 +884,7 @@ async def main() -> None:
     )
 
     # Pass webhook settings to telegram
-    # await ptb_application.bot.set_webhook(url=f"{URL}/webhook/telegram", allowed_updates=Update.ALL_TYPES)
+    await ptb_application.bot.set_webhook(url=f"{URL}/webhook/telegram", allowed_updates=Update.ALL_TYPES)
 
     # Run application and webserver together
     async with ptb_application:
