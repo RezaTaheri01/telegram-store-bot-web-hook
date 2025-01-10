@@ -37,32 +37,34 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    SECRET_KEY=your-django-secret-key
    ENCRYPTION_KEYS=your-encryption-key
    DEBUG=True
-   DEBUG_WEBHOOK=True
    ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
-   ALLOWED_HOSTS_WEBHOOK=localhost,127.0.0.1,your-domain.com
    WEBHOOK_URL=https://your-domain.com
-   WEBHOOK_PORT=8000
-   PAYMENT_DOMAIN=http://127.0.0.1:8001
+   WEBHOOK_PORT=8001
+   PAYMENT_DOMAIN=https://your-domain.com
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
 
-4. **Run Migrations**:  
+4. **Run Migrations** Already Done:
+   **Attention**: If you what to use below commands first comment bot_module/app.py ready function.
    ```bash
    python manage.py makemigrations payment users products bot_module
    python manage.py migrate
    python manage.py createsuperuser
    ```
 
-5. **Start Servers**:  
-   - Django Backend:  
+   **Superuser** username and password:
+   ```
+   username: admin
+   password: admin12345678
+   ```
+
+6. **Start Servers**:  
      ```bash
-     python manage.py runserver 8001
-     ```  
-   - Webhook (Uvicorn):  
-     ```bash
-     python ./bot.py
+     uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 8000
      ```
+
+     This command also run webserver on 127.0.0.1:<PORT that define on .env>
 
 ---
 
