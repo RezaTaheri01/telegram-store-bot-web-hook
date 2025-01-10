@@ -1,3 +1,4 @@
+import asyncio
 from django.apps import AppConfig
 
 
@@ -6,7 +7,12 @@ class BotModuleConfig(AppConfig):
     name = 'bot_module'
 
     def ready(self):
-        import asyncio
-        from .bot import main  # Assume bot logic is in webhook/bot.py
-        
-        asyncio.run(main())
+        from .bot import main
+
+        # We will schedule the async main function outside the django setup
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If there is already a running loop (like when running in an async context), don't create a new one
+            loop.create_task(main())  # Create task instead of running it immediately
+        else:
+            asyncio.run(main())  # Only run main() if there is no running loop
