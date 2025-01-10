@@ -4,7 +4,7 @@ import asyncio
 from telegram import Bot
 from .models import Transactions
 from users.models import UserData
-from bot_settings import lang1, texts
+from bot_module.bot_settings import lang1, texts
 from decouple import config
 from django.db import transaction as db_transaction
 import logging
