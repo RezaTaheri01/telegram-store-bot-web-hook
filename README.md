@@ -56,7 +56,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    **Superuser** username and password:
    ```
    username: admin
-   password: admin12345678
+   password: admin1234
    ```
 
 6. **Start Servers**:  
