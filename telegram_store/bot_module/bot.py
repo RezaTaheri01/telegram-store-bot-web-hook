@@ -844,5 +844,5 @@ async def main() -> None:
         await ptb_application.stop()
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
