@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import telegram, custom_updates, health
+from .bot import telegram, custom_updates, health
 
 
 urlpatterns = [
