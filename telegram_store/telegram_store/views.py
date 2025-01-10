@@ -60,3 +60,36 @@ class HomePage(TemplateView):
 #     subprocess.run(["pkill", "-f", BOT_DICE_SCRIPT_PATH])
 
 # endregion
+
+
+from django.core.management import call_command
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def run_migrations_and_create_superuser(request):
+    """
+    API view to run migrations and create a superuser if one does not exist.
+    """
+    try:
+        # Run migrations
+        call_command('makemigrations', interactive=False)
+        call_command('migrate', interactive=False)
+
+        # Check if a superuser exists
+        User = get_user_model()
+        username = "admin0"
+        email = "admin@example.com"
+        password = "admin12345678"  # Consider using environment variables here
+
+        if not User.objects.filter(username=username).exists():
+            # Create superuser if it doesn't exist
+            User.objects.create_superuser(username=username, email=email, password=password)
+            return JsonResponse({"message": "Superuser created successfully and migrations ran!"}, status=201)
+        else:
+            return JsonResponse({"message": "Superuser already exists, migrations ran successfully!"}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
