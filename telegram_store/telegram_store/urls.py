@@ -21,7 +21,6 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('payment/', include('payment.urls')),
-    path('mig-user/', views.run_migrations_and_create_superuser),
     path('', views.HomePage.as_view(), name="home_page"),
     path('webhook/', include("bot_module.urls")),
 ]
