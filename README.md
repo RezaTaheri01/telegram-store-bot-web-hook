@@ -20,7 +20,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
 
 1. **Clone the Repository**:  
    ```bash
-   git clone https://github.com/RezaTaheri01/telegram-store-bot-web-hook.git
+   git clone --branch single-run https://github.com/RezaTaheri01/telegram-store-bot-web-hook.git
    cd telegram-store-bot-web-hook/telegram_store
    ```
 
