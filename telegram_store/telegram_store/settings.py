@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'payment',
     'products',
+    'bot_module'
 ]
 
 # to check if webhook set correctly:
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -147,3 +149,6 @@ STATIC_ROOT = BASE_DIR / 'production_files'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EJF_ENCRYPTION_KEYS = config('ENCRYPTION_KEYS', default='6-QgONW6TUl5rt4Xq8u-wBwPcb15sIYS2CN6d69zueM=')
+
+# Enable WhiteNoise to serve static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
