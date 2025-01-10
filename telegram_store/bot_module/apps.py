@@ -8,5 +8,5 @@ class BotModuleConfig(AppConfig):
     def ready(self):
         import asyncio
         from .bot import main  # Assume bot logic is in webhook/bot.py
-
-        asyncio.create_task(main())
+        
+        asyncio.run(main())
