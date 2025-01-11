@@ -1,35 +1,26 @@
-# to check if webhook set correctly:
-# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
-# cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
-# This program is dedicated to the public domain under the CC0 license.
-# pylint: disable=import-error,unused-argument
-
-# Warning showed on render.com deployment
-# Todo: /opt/render/project/src/.venv/lib/python3.11/site-packages/django/http/response.py:517:
-#   Warning: StreamingHttpResponse must consume synchronous iterators in order to serve them asynchronously.
-#   Use an asynchronous iterator instead
-# For port binding
-# Todo: https://render.com/docs/web-services#port-binding
-
 """
-Simple example of a bot that uses a custom webhook setup and handles custom updates.
-For the custom webhook setup, the libraries `Django` and `uvicorn` are used. Please
-install them as `pip install Django~=4.2.4 uvicorn~=0.23.2`.
-Note that any other `asyncio` based web server framework can be used for a custom webhook setup
-just as well.
+to check if webhook set correctly:
+https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
+cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
+This program is dedicated to the public domain under the CC0 license.
 
-Usage:
-Set bot Token, URL, admin CHAT_ID and PORT after the imports.
+Warning that showed on render.com deployment:
+Todo: /opt/render/project/src/.venv/lib/python3.11/site-packages/django/http/response.py:517:
+  Warning: StreamingHttpResponse must consume synchronous iterators in order to serve them asynchronously.
+  Use an asynchronous iterator instead
+For port binding visit this:
+Todo: https://render.com/docs/web-services#port-binding
+
 You may also need to change the `listen` value in the uvicorn configuration to match your setup.
 Press Ctrl-C on the command line or send a signal to the process to stop the bot.
 """
+# import html
+# from dataclasses import dataclass
 
 from bot_module.bot_settings import *
-import html
 import asyncio
 import uvicorn
 from decouple import config
-from dataclasses import dataclass
 
 # region Django Imports
 
@@ -46,7 +37,7 @@ from products.models import Category, Product, ProductDetail
 
 # region Telegram Imports
 
-from telegram.constants import ParseMode
+# from telegram.constants import ParseMode
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from telegram.ext import (
     Application,
@@ -57,12 +48,8 @@ from telegram.ext import (
     filters,
     CallbackContext,
     ContextTypes,
-    ExtBot
+    # ExtBot
 )
-
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
-import json
 
 # endregion
 
@@ -106,7 +93,7 @@ language_cache: dict = {}
 
 # region Menu
 
-async def start_menu(update: Update, context: CallbackContext) -> None:  # active command is /start
+async def start_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:  # active command is /start
     usr_lng = await user_language(update.effective_user.id)
     full_name = f"{update.effective_user.first_name or ''} {update.effective_user.last_name or ''}".strip()
     try:
@@ -139,7 +126,7 @@ async def menu_from_callback(query: CallbackQuery) -> None:
 
 # region Balance
 
-async def user_balance(update: Update, context: CallbackContext) -> None:
+async def user_balance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     balance = 0  # Default balance
     usr_lng = await user_language(update.effective_user.id)
     try:
@@ -736,112 +723,71 @@ async def error_handler(update: Update, context: CallbackContext):
 # endregion
 
 
-# region etc
-@dataclass
-class WebhookUpdate:
-    """Simple dataclass to wrap a custom update type"""
-
-    user_id: int
-    payload: str
-
-
-class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
-    """
-    Custom CallbackContext class that makes `user_data` available for updates of type
-    `WebhookUpdate`.
-    """
-
-    @classmethod
-    def from_update(
-            cls,
-            update: object,
-            application: "Application",
-    ) -> "CustomContext":
-        if isinstance(update, WebhookUpdate):
-            return cls(application=application, user_id=update.user_id)
-        return super().from_update(update, application)
+# region Custom Update
+# https://docs.python-telegram-bot.org/en/v21.9/examples.customwebhookbot.html
+# @dataclass
+# class WebhookUpdate:
+#     """Simple dataclass to wrap a custom update type"""
+#
+#     user_id: int
+#     payload: str
 
 
-async def start(update: Update, context: CustomContext) -> None:
-    print("START")
-    """Display a message with instructions on how to use this bot."""
-    payload_url = html.escape(f"{URL}/submitpayload?user_id=<your user id>&payload=<payload>")
-    text = (
-        f"To check if the bot is still running, call <code>{URL}/healthcheck</code>.\n\n"
-        f"To post a custom update, call <code>{payload_url}</code>."
-    )
-    await update.message.reply_html(text=text)
+# class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
+#     """
+#     Custom CallbackContext class that makes `user_data` available for updates of type
+#     `WebhookUpdate`.
+#     """
+#
+#     @classmethod
+#     def from_update(
+#             cls,
+#             update: object,
+#             application: "Application",
+#     ) -> "CustomContext":
+#         if isinstance(update, WebhookUpdate):
+#             return cls(application=application, user_id=update.user_id)
+#         return super().from_update(update, application)
 
 
-async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
-    """Handle custom updates."""
-    chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
-    payloads = context.user_data.setdefault("payloads", [])
-    payloads.append(update.payload)
-    combined_payloads = "</code>\n• <code>".join(payloads)
-    text = (
-        f"The user {chat_member.user.mention_html()} has sent a new payload. "
-        f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
-    )
-    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=text, parse_mode=ParseMode.HTML)
+# async def start(update: Update, context: CustomContext) -> None:
+#     """Display a message with instructions on how to use this bot."""
+#     payload_url = html.escape(f"{URL}/submitpayload?user_id=<your user id>&payload=<payload>")
+#     text = (
+#         f"To check if the bot is still running, call <code>{URL}/healthcheck</code>.\n\n"
+#         f"To post a custom update, call <code>{payload_url}</code>."
+#     )
+#     await update.message.reply_html(text=text)
 
 
-# Todo: Move these 3 functions to view.py
-@csrf_exempt
-async def telegram(request: HttpRequest) -> HttpResponse:
-    # logger.info(f"Received: {request.body}")
-    if request.method == "GET":
-        return HttpResponse(status=404)
-
-    logger.info("Telegram")
-    try:
-        """Handle incoming Telegram updates by putting them into the `update_queue`"""
-        # update = Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
-        # logger.info(update.effective_user.id)
-        # logger.info(update.effective_user.username)
-        await ptb_application.update_queue.put(
-            Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
-        )
-    except Exception as e:
-        logger.error(f"Error in ptb_application.update_queue.put: {e}")
-
-    return HttpResponse(status=200)  # Return a successful response
-
-
-@csrf_exempt
-async def custom_updates(request: HttpRequest) -> HttpResponse:
-    """
-    Handle incoming webhook updates by also putting them into the `update_queue` if
-    the required parameters were passed correctly.
-    """
-    try:
-        user_id = int(request.GET["user_id"])
-        payload = request.GET["payload"]
-    except KeyError:
-        return HttpResponseBadRequest(
-            "Please pass both `user_id` and `payload` as query parameters.",
-        )
-    except ValueError:
-        return HttpResponseBadRequest("The `user_id` must be a string!")
-
-    await ptb_application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
-    return HttpResponse()
-
-
-@csrf_exempt
-async def health(_: HttpRequest) -> HttpResponse:
-    """For the health endpoint, reply with a simple plain text message."""
-    return HttpResponse("The bot is still running fine :)")
+# async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
+#     """Handle custom updates."""
+#     chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
+#     payloads = context.user_data.setdefault("payloads", [])
+#     payloads.append(update.payload)
+#     combined_payloads = "</code>\n• <code>".join(payloads)
+#     text = (
+#         f"The user {chat_member.user.mention_html()} has sent a new payload. "
+#         f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
+#     )
+#     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=text, parse_mode=ParseMode.HTML)
 
 
 # endregion
 
+
+# region Register Bot
+
 # Set up PTB application and a web application for handling the incoming requests.
-context_types = ContextTypes(context=CustomContext)
+# context_types = ContextTypes(context=CustomContext)
 # Here we set updater to None because we want our custom webhook server to handle the updates
 # and hence we don't need an Updater instance
+# ptb_application = (
+#     Application.builder().token(TOKEN).updater(None).context_types(context_types).build()
+# )
+
 ptb_application = (
-    Application.builder().token(TOKEN).updater(None).context_types(context_types).build()
+    Application.builder().token(TOKEN).updater(None).build()
 )
 
 # register handlers
@@ -881,6 +827,8 @@ ptb_application.add_error_handler(error_handler)
 
 # ptb_application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
 
+# endregion
+
 
 async def main() -> None:
     """Finalize configuration and run the applications."""
@@ -903,4 +851,4 @@ async def main() -> None:
         await ptb_application.stop()
 
 # if __name__ == "__main__":
-#     asyncio.run(main())
+#     asyncio.run(main()) # running this from app.py
