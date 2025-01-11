@@ -1,9 +1,8 @@
 from django.urls import path
-from .bot import telegram, custom_updates, health
-
+from . import views
 
 urlpatterns = [
-    path("telegram", telegram, name="Telegram updates"),
-    path("submitpayload", custom_updates, name="custom updates"),
-    path("healthcheck", health, name="health check"),
+    path("telegram", views.telegram, name="Telegram updates"),
+    # path("submitpayload", view.custom_updates, name="custom updates"),
+    path("healthcheck", views.health, name="health check"),
 ]
