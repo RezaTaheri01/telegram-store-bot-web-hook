@@ -41,19 +41,13 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    WEBHOOK_URL=https://your-domain.com
    WEBHOOK_PORT=8001
    PAYMENT_DOMAIN=https://your-domain.com
-   USE_SQLITE=True
-   # If USE_SQLITE=False complete below
-   PASS_DB=<db-password>
-   USER_DB=<db-user>
-   HOST_DB=<db-host>
-   NAME_DB=<db-name>
-   PORT_DB=<db-port>
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
 
 4. **Run Migrations** Already done for sqlite3!:<br>
-   **Attention**: If you what to use below commands first comment bot_module/app.py ready function.
+   **Attention**: If you what to use below commands first comment bot_module/app.py ready function.<br>
+   also delete migrations folders in users, payment and products
    ```bash
    python manage.py makemigrations users payment products
    python manage.py migrate
