@@ -87,8 +87,12 @@ WSGI_APPLICATION = 'telegram_store.wsgi.application'
 # Change_It
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config("NAME_DB"),
+        'USER': config("USER_DB"),
+        'PASSWORD': config("PASS_DB"),
+        'HOST': config("HOST_DB"),
+        'PORT': '3306',
     }
 }
 
