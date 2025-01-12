@@ -807,6 +807,8 @@ async def telegram(request: HttpRequest) -> HttpResponse:
 
     print("Telegram")
     try:
+        # Log the raw incoming data for debugging
+        print(request.body)
         """Handle incoming Telegram updates by putting them into the `update_queue`"""
         await ptb_application.update_queue.put(
             Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
