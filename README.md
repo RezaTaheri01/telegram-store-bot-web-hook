@@ -41,7 +41,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    WEBHOOK_URL=https://your-domain.com
    WEBHOOK_PORT=8001
    PAYMENT_DOMAIN=https://your-domain.com
-   USE_SQLITE=False
+   USE_SQLITE=True
    # If USE_SQLITE=False complete below
    PASS_DB=<db-password>
    USER_DB=<db-user>
