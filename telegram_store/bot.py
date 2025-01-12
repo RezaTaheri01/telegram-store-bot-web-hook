@@ -908,7 +908,7 @@ async def main() -> None:
             app=get_asgi_application(),
             port=PORT,
             use_colors=False,
-            host="0.0.0.0",
+            host="127.0.0.1",
             lifespan="off",  # Disable lifespan protocol
         )
     )
