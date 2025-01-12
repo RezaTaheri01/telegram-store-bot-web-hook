@@ -45,18 +45,20 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    WEBHOOK_URL=https://your-domain.com
    WEBHOOK_PORT=8000
    PAYMENT_DOMAIN=http://127.0.0.1:8001
+   USE_SQLITE=False
+   # If USE_SQLITE=False complete below
    PASS_DB=<db-password>
    USER_DB=<db-user>
    HOST_DB=<db-host>
    NAME_DB=<db-name>
-
+   USE_SQLITE=False
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
 
 4. **Run Migrations**:  
    ```bash
-   python manage.py makemigrations payment users products
+   python manage.py makemigrations users payment products
    python manage.py migrate
    python manage.py createsuperuser
    ```
