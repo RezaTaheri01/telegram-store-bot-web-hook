@@ -51,7 +51,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    USER_DB=<db-user>
    HOST_DB=<db-host>
    NAME_DB=<db-name>
-   USE_SQLITE=False
+   PORT_DB=<db-port>
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
