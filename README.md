@@ -45,9 +45,8 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
 
-4. **Run Migrations** Already done for sqlite3!:<br>
+4. **Run Migrations**:<br>
    **Attention**: If you what to use below commands first comment bot_module/app.py ready function.<br>
-   also delete migrations folders in users, payment and products
    ```bash
    python manage.py makemigrations users payment products
    python manage.py migrate
