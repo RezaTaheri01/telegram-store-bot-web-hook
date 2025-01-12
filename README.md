@@ -6,6 +6,8 @@ For deployment i used both branches, [single-run](https://github.com/RezaTaheri0
 A Python-based Telegram bot integrated with a Django backend, featuring webhook support with Uvicorn and serve as a digital store.  
 This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegram-store-bot) but webhook version, the main functionalities didn't change.
 
+**Attention**: Due to free deployment, server will spin down with inactivity, which can delay requests by 50 seconds or more.
+
 ---
 
 ## Features 🛠️  
