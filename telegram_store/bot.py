@@ -3,6 +3,8 @@
 # !/usr/bin/env python
 # This program is dedicated to the public domain under the CC0 license.
 # pylint: disable=import-error,unused-argument
+# to check if webhook set correctly:
+# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 
 """
 Simple example of a bot that uses a custom webhook setup and handles custom updates.
@@ -16,7 +18,7 @@ Set bot Token, URL, admin CHAT_ID and PORT after the imports.
 You may also need to change the `listen` value in the uvicorn configuration to match your setup.
 Press Ctrl-C on the command line or send a signal to the process to stop the bot.
 """
-
+import threading
 from uuid import uuid4
 
 from bot_settings import *
@@ -807,6 +809,8 @@ async def telegram(request: HttpRequest) -> HttpResponse:
 
     print("Telegram")
     try:
+        # Log the raw incoming data for debugging
+        print(request.body)
         """Handle incoming Telegram updates by putting them into the `update_queue`"""
         await ptb_application.update_queue.put(
             Update.de_json(data=json.loads(request.body), bot=ptb_application.bot)
@@ -904,7 +908,8 @@ async def main() -> None:
             app=get_asgi_application(),
             port=PORT,
             use_colors=False,
-            host="127.0.0.1",
+            host="0.0.0.0",
+            lifespan="off",  # Disable lifespan protocol
         )
     )
 
@@ -919,4 +924,13 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Run the bot's event loop in a separate thread
+    thread = threading.Thread(target=asyncio.run, args=(main(),))
+    thread.daemon = True  # Ensure the thread doesn't block app shutdown
+    thread.start()
+
+    # Block the main thread until the server shuts down
+    try:
+        thread.join()
+    except KeyboardInterrupt:
+        print("Shutting down gracefully...")
