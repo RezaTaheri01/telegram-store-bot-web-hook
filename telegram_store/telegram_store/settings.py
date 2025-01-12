@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'telegram_store.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # Change_It
-if config("USE_SQLITE", default=True, case=bool):
+if config("USE_SQLITE", default=True, cast=bool):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
