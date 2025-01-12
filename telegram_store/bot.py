@@ -3,6 +3,8 @@
 # !/usr/bin/env python
 # This program is dedicated to the public domain under the CC0 license.
 # pylint: disable=import-error,unused-argument
+# to check if webhook set correctly:
+# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 
 """
 Simple example of a bot that uses a custom webhook setup and handles custom updates.
