@@ -908,7 +908,8 @@ async def main() -> None:
             app=get_asgi_application(),
             port=PORT,
             use_colors=False,
-            host="127.0.0.1",
+            # host="127.0.0.1",
+            host="0.0.0.0",
             # lifespan="off",  # Disable lifespan protocol
         )
     )
@@ -924,14 +925,14 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main(), )
+    # asyncio.run(main(), )
     # Run the bots event loop in a separate thread.
-    # thread = threading.Thread(target=asyncio.run, args=(main(),))
-    # thread.daemon = True  # Ensure the thread doesn't block app shutdown
-    # thread.start()
-    #
-    # # Block the main thread until the server shuts down
-    # try:
-    #     thread.join()
-    # except KeyboardInterrupt:
-    #     print("Shutting down gracefully...")
+    thread = threading.Thread(target=asyncio.run, args=(main(),))
+    thread.daemon = True  # Ensure the thread doesn't block app shutdown
+    thread.start()
+
+    # Block the main thread until the server shuts down
+    try:
+        thread.join()
+    except KeyboardInterrupt:
+        print("Shutting down gracefully...")
