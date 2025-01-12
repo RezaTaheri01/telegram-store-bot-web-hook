@@ -51,7 +51,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
 
 4. **Run Migrations**:  
    ```bash
-   python manage.py makemigrations payment users products
+   python manage.py makemigrations users payment products
    python manage.py migrate
    python manage.py createsuperuser
    ```
