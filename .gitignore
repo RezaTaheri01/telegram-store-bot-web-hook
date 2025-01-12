@@ -168,3 +168,7 @@ cython_debug/
 *.zip
 # /telegram_store/bot_module/migrations
 telegram_store/.env_main
+telegram_store/db.sqlite3
+/telegram_store/payment/migrations
+/telegram_store/users/migrations
+/telegram_store/products/migrations
