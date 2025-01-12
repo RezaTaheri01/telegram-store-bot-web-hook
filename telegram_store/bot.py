@@ -16,7 +16,7 @@ Set bot Token, URL, admin CHAT_ID and PORT after the imports.
 You may also need to change the `listen` value in the uvicorn configuration to match your setup.
 Press Ctrl-C on the command line or send a signal to the process to stop the bot.
 """
-
+import threading
 from uuid import uuid4
 
 from bot_settings import *
@@ -920,4 +920,13 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Run the bot's event loop in a separate thread
+    thread = threading.Thread(target=asyncio.run, args=(main(),))
+    thread.daemon = True  # Ensure the thread doesn't block app shutdown
+    thread.start()
+
+    # Block the main thread until the server shuts down
+    try:
+        thread.join()
+    except KeyboardInterrupt:
+        print("Shutting down gracefully...")
