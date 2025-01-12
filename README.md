@@ -1,7 +1,7 @@
 
 # Telegram Bot with Django Integration Web Hook 📢💻  
 
-For deployment i used both branches, [single-run](https://github.com/RezaTaheri01/telegram-store-bot-web-hook/tree/single-run) is easier to deploy, [main](https://github.com/RezaTaheri01/telegram-store-bot-web-hook/tree/main) is more reliable because bot and back-end could be run individually.
+For deployment i used both branches, [single-run](https://github.com/RezaTaheri01/telegram-store-bot-web-hook/tree/single-run) is easier to deploy, [main](https://github.com/RezaTaheri01/telegram-store-bot-web-hook/tree/main) is more reliable because bot and back-end could be run individually.(Deployed on [Render.com](https://render.com/))
 </br></br>
 A Python-based Telegram bot integrated with a Django backend, featuring webhook support with Uvicorn and serve as a digital store.  
 This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegram-store-bot) but webhook version, the main functionalities didn't change.
