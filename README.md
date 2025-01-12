@@ -48,7 +48,7 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
 4. **Run Migrations** Already done for sqlite3!:<br>
    **Attention**: If you what to use below commands first comment bot_module/app.py ready function.
    ```bash
-   python manage.py makemigrations payment users products bot_module
+   python manage.py makemigrations users payment products
    python manage.py migrate
    python manage.py createsuperuser
    ```
