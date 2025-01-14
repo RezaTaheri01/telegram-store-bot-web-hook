@@ -15,6 +15,7 @@ from decouple import config
 categories_in_row = 2  # number of categories in row
 products_in_row = 2  # number of products in row
 number_of_transaction = 4  # number of transactions in transactions list
+number_of_products = 2  # number of products in purchase product list
 valid_link_in_seconds = 1800  # 30 minutes
 time_zone = "UTC"  # base on TIME_ZONE in telegram_store/setting.py
 
@@ -41,6 +42,7 @@ texts = {
         "textPaymentLink": f"Your payment link is ready and it's valid for {valid_link_in_seconds // 60} minutes",
         "textNoTransaction": "No transactions were found",
         "textTransaction": "Here are your transactions, page {}:",
+        "textProducts": "Here are your purchases, page {}:",
         "textAccountMenu": "Hey {}! Please choose from below",  # username
         "textAccInfo": "Username: {}\nFull name: {}\nBalance: {} {}",  # username, full name, balance
         "textNotUser": "User not found",
@@ -58,6 +60,7 @@ texts = {
         "textInvalidPaymentAmount": "Invalid payment amount! Please try again",
         "textProductDetail": "Successful\n{}",  # product detail
         "textTransactionDetail": "Amount: {} {}\nDate: {}\n\n",  # amount, priceUnit, datetime
+        "textProductDetailList": "Product: {}\nDate: {}\nDetail: {}\n\n",  # Product Name, Purchase Date, Detail
         "textPrev": "Prev",
         "textNext": "Next",
         # Button texts
@@ -69,6 +72,7 @@ texts = {
         "buttonTransactionsList": "Transactions List",
         "buttonBackMainMenu": "Main Menu",
         "buttonBack": "Back",
+        "buttonProductsList": "Purchase History",
         "buttonLanguage": lang2,  # don't change this
     },
     lang2: {
@@ -83,6 +87,7 @@ texts = {
         "textPaymentLink": f"لینک پرداخت شما آماده است و برای {valid_link_in_seconds // 60} دقیقه معتبر است.",
         "textNoTransaction": "هیچ تراکنشی یافت نشد",
         "textTransaction": "تراکنش های شما, صفحه {}",
+        "textProducts": "محصولات خریداری شده شما, صفحه {}",
         "textAccountMenu": "درود مجدد {}! لطفا از گزینه های زیر انتخاب کنید",  # username
         "textAccInfo": "نام کاربری: {}\nنام کامل: {}\nموجودی: {} {}",  # username, full name, balance
         "textNotUser": "کاربر یافت نشد",
@@ -100,6 +105,7 @@ texts = {
         "textInvalidPaymentAmount": "مقدار پرداخت نامعتبر است! لطفاً دوباره امتحان کنید",
         "textProductDetail": "موفقیت ‌آمیز\n{}",  # product detail
         "textTransactionDetail": "مقدار: {} {}\nتاریخ: {}\n\n",  # amount, priceUnit, datetime
+        "textProductDetailList": "محصول: {}\nتاریخ خرید: {}\nجزئیات: {}\n\n",  # Product Name, Purchase Date, Detail
         "textPrev": "قبلی",
         "textNext": "بعدی",
         # Button texts
@@ -111,6 +117,7 @@ texts = {
         "buttonTransactionsList": "لیست تراکنش ها",
         "buttonBackMainMenu": "منوی اصلی",
         "buttonBack": "بازگشت",
+        "buttonProductsList": "تاریخچه محصولات",
         "buttonLanguage": lang3,  # don't change this
     },
     lang3: {
@@ -125,6 +132,7 @@ texts = {
         "textPaymentLink": f"Ihr Zahlungslink ist bereit und für {valid_link_in_seconds // 60} Minuten gültig",
         "textNoTransaction": "Es wurden keine Transaktionen gefunden",
         "textTransaction": "Hier sind Ihre Transaktionen, Seite {}:",
+        "textProducts": "Hier sind Ihre Produkte, Seite {}:",
         "textAccountMenu": "Hallo {}! Bitte wählen Sie aus den folgenden Optionen",  # username
         "textAccInfo": "Benutzername: {}\nVollständiger Name: {}\nGuthaben: {} {}",  # username, full name, balance
         "textNotUser": "Benutzer nicht gefunden",
@@ -142,6 +150,8 @@ texts = {
         "textInvalidPaymentAmount": "Ungültiger Zahlungsbetrag! Bitte versuchen Sie es erneut",
         "textProductDetail": "Erfolgreich\n{}",  # product detail
         "textTransactionDetail": "Betrag: {} {}\nDatum: {}\n\n",  # amount, priceUnit, datetime
+        "textProductDetailList": "Produkte: {}\nDatum: {}\nEinzelheit: {}\n\n",
+        # Product Name, Purchase Date, Detail
         "textPrev": "Vorh",
         "textNext": "Nächste",
         # Button texts
@@ -153,6 +163,7 @@ texts = {
         "buttonTransactionsList": "Transaktionsliste",
         "buttonBackMainMenu": "Hauptmenü",
         "buttonBack": "Zurück",
+        "buttonProductsList": "Produkte",
         "buttonLanguage": lang1,  # Don't change this
     }
 }
@@ -169,6 +180,7 @@ deposit_cb = "5"
 change_lang_cb = "6"
 # Warning: Do not use _ in below callbacks!
 transactions_cb = "tran"
+purchase_products_cb = "pp"
 select_category_cb = "cat"
 select_product_cb = "pro"
 payment_cb = "pay"
@@ -183,8 +195,7 @@ for key, value in texts.items():
         [account_menu_button,
          InlineKeyboardButton(texts[key]["buttonBalance"], callback_data=balance_cb)],
         [InlineKeyboardButton(texts[key]["buttonCategories"], callback_data=categories_cb)],
-        [InlineKeyboardButton(texts[key]["buttonLanguage"
-                                         ""], callback_data=change_lang_cb)],
+        [InlineKeyboardButton(texts[key]["buttonLanguage"], callback_data=change_lang_cb)],
         [InlineKeyboardButton(texts[key]["buttonDeposit"], callback_data=deposit_cb)],
     ]
     buttons[key]["main_menu_markup"] = InlineKeyboardMarkup(main_menu_keys)
@@ -195,7 +206,8 @@ for key, value in texts.items():
     buttons[key]["back_menu_markup"] = InlineKeyboardMarkup(back_menu_key)
 
     account_keys = [
-        [InlineKeyboardButton(texts[key]["buttonAccountInfo"], callback_data=account_info_cb),
+        [InlineKeyboardButton(texts[key]["buttonAccountInfo"], callback_data=account_info_cb)],
+        [InlineKeyboardButton(texts[key]["buttonProductsList"], callback_data=purchase_products_cb),
          InlineKeyboardButton(texts[key]["buttonTransactionsList"], callback_data=transactions_cb)],
         [main_menu_button]
     ]
