@@ -45,6 +45,13 @@ This code is base on [telegram-store-bot](https://github.com/RezaTaheri01/telegr
    WEBHOOK_URL=https://your-domain.com
    WEBHOOK_PORT=8001
    PAYMENT_DOMAIN=https://your-domain.com
+
+   #DB_ENGINE=postgresql
+   #DB_NAME=mydb
+   #DB_USER=postgres
+   #DB_PASS=secret123
+   #DB_HOST=localhost
+   #DB_PORT=5432
    ```
 
    **Note**: Replace placeholder values with your actual credentials. If using localhost, use a tunneling tool (e.g., Ngrok or Cloudflare Tunnel) for `WEBHOOK_URL` and `PAYMENT_DOMAIN`.  
