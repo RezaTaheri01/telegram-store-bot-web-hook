@@ -24,7 +24,7 @@ This code is based on [telegram-store-bot](https://github.com/RezaTaheri01/teleg
 
 ---
 
-## Features ✨
+## Features
 
 * Product browsing by categories 🏷️
 * Purchase products using TON cryptocurrency 💰
@@ -39,7 +39,7 @@ This code is based on [telegram-store-bot](https://github.com/RezaTaheri01/teleg
 
 ---
 
-## Highlights 🚀
+## Highlights
 
 * **Webhook Integration**: Efficient Telegram update handling with Uvicorn. 🌐
 * **Redis Queue**: Django receives webhooks → pushes to Redis → async bot consumes. ⚡
@@ -51,7 +51,7 @@ This code is based on [telegram-store-bot](https://github.com/RezaTaheri01/teleg
 
 ---
 
-## Setup & Installation 🛠️
+## Setup & Installation
 
 1. **Clone repository:**
 
@@ -110,7 +110,15 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-5. **Create BotSettings in Django admin** (mandatory **before starting the bot**):
+5. **Start Django web server:**
+
+```bash
+uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 8000
+```
+
+**Production**: use **Gunicorn** or **Uvicorn** with multiple workers for webhook handling
+
+6. **Create BotSettings in Django admin** (mandatory **before starting the bot**):
 
 - Open Django admin: `https://your-domain.com/adminadmin`  
 - Create a new `BotSetting` entry with at least:  
@@ -120,15 +128,8 @@ python manage.py createsuperuser
   - TON Network Delay (seconds, e.g., 10)  
   - Optional: Disable product images for faster UI
 
-6. **Start Django web server:**
 
-```bash
-uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 8000
-```
-
-**Production**: use **Gunicorn** or **Uvicorn** with multiple workers for webhook handling
-
-### 7. **Start Redis server / connect to Redis**
+7. **Start Redis server / connect to Redis**
 
 Redis is used as a **message queue** between the Django webhook and the async bot worker.
 
@@ -199,7 +200,7 @@ python bot.py
 
 ---
 
-## Bot Commands 📋
+## Bot Commands
 
 * `/start` – Start bot and show main menu  
 * `/menu` – Show main menu  
@@ -210,7 +211,7 @@ python bot.py
 
 ---
 
-## Webhook & Redis Overview 🧭
+## Webhook & Redis Overview
 
 1. **Telegram → Django webhook**: Updates arrive at Django endpoint.  
 2. **Django → Redis**: Update JSON is pushed to `telegram_updates` list.  
@@ -224,7 +225,7 @@ This ensures **reliable async processing** and avoids blocking webhook requests.
 
 ---
 
-## Database Notes ⚙️
+## Database Notes
 
 * `TonCursor`: tracks last processed transaction (`last_lt`, `last_hash`)  
 * `Transaction.tx_id`: unique for each payment  
@@ -232,7 +233,7 @@ This ensures **reliable async processing** and avoids blocking webhook requests.
 
 ---
 
-## Best Practices ✅
+## Best Practices
 
 * Use **PostgreSQL** in production for safe row-level locking.  
 * Keep `TON Fetch Limit` moderate (100–500).  
@@ -242,7 +243,7 @@ This ensures **reliable async processing** and avoids blocking webhook requests.
 
 ---
 
-## Architecture Diagram 🧩
+## Architecture Diagram
 
 ```mermaid
 flowchart LR
@@ -259,7 +260,7 @@ flowchart LR
 
 ---
 
-## Security & Privacy 🔐
+## Security & Privacy
 
 * Keep `SECRET_KEY` and API keys out of source control  
 * Use **HTTPS** for webhooks  
@@ -268,7 +269,7 @@ flowchart LR
 
 ---
 
-## Testing & Development 🧪
+## Testing & Development
 
 * Manual testing for payments recommended  
 * Unit tests suggested for:
@@ -278,12 +279,12 @@ flowchart LR
 
 ---
 
-## License 📜
+## License
 
 GPL-3.0 — see `LICENSE` file.
 
 ---
 
-## Disclaimer 🤖
+## Disclaimer
 
 Parts of this README were assisted by AI. All final code and implementation decisions were made manually by the author.
