@@ -1,3 +1,14 @@
+"""
+To set webhook:
+https://api.telegram.org/bot<your-bot-token>/setWebhook?url=https://domain.com/webhook/TELEGRAM_WEBHOOK_SECRET/
+
+To check if webhook set correctly:
+https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
+
+cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
+This program is dedicated to the public domain under the CC0 license.
+"""
+
 # Telegram
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from telegram.ext import (
@@ -1430,3 +1441,59 @@ async def send_message(update: Update = None,
     except Exception as e:
         logger.error(f"Error in send_message function: {e}")
 
+
+# ---------------- redis consumer ----------------
+
+async def redis_consumer(app: Application):
+    loop = asyncio.get_running_loop()
+
+    while True:
+        # Blocking pop, run in executor
+        _, raw = await loop.run_in_executor(
+            None, redis_client.blpop, "telegram_updates"
+        )
+
+        update_dict = json.loads(raw)
+        update = Update.de_json(update_dict, app.bot)
+
+        await app.update_queue.put(update)
+
+
+# ---------------- background tasks ----------------
+
+async def start_background_tasks(application):
+    print("Bot start successfully")
+    # Schedule background jobs
+    asyncio.create_task(ton_price_job())
+    asyncio.create_task(ton_polling_job(application))
+    asyncio.create_task(redis_consumer(application))
+
+
+# ---------------- main ----------------
+
+async def main() -> None:
+    app = Application.builder().token(TOKEN).build()
+
+    handlers = [
+        CommandHandler(UPDATE_SETTING_COMMAND, update_setting),
+        CommandHandler("start", start_menu),
+        CommandHandler("menu", start_menu),
+        CommandHandler("balance", user_balance),
+        CommandHandler("pay", pay_link),
+        CallbackQueryHandler(callback_query_handler),
+    ]
+
+    app.add_handlers(handlers)
+    app.add_error_handler(error_handler)
+
+    await app.initialize()
+    await app.start()
+
+    await start_background_tasks(app)
+
+    # keep process alive forever
+    await asyncio.Event().wait()
+
+
+if __name__ == "__main__": 
+    asyncio.run(main())

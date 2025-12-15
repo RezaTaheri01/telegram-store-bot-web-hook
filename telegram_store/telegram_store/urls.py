@@ -26,7 +26,7 @@ admin_url = config("ADMIN_URL")
 
 urlpatterns = [
     path('', views.HomePage.as_view(), name="home_page"),
-    path('webhook/', include("bot_module.urls")),
+    path("webhook/<str:secret>/", views.telegram_webhook),
 ]
 
 urlpatterns += i18n_patterns(

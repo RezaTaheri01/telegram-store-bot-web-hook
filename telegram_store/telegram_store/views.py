@@ -2,6 +2,14 @@ from django.views.generic import TemplateView
 from decouple import config
 from users.models import UserData
 
+import json
+import redis
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+
+
+redis_client = redis.from_url(settings.REDIS_URL)
 
 
 class HomePage(TemplateView):
@@ -18,6 +26,21 @@ class HomePage(TemplateView):
         context["user_count"] = UserData.objects.count()
         
         return context
+
+
+@csrf_exempt
+def telegram_webhook(request, secret):
+    if secret != settings.TELEGRAM_WEBHOOK_SECRET:
+        return HttpResponseForbidden()
+    
+    print("Get Message")
+
+    update_json = request.body.decode("utf-8")
+
+    # Push raw update JSON to Redis list
+    redis_client.rpush("telegram_updates", update_json)
+
+    return HttpResponse("OK")
 
 # region Control Bots
 

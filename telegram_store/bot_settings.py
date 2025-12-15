@@ -30,6 +30,7 @@ TON_PRICE_DECIMAL_PLACE = 3
 # Number of decimal places to display the user balance(positive int)
 BALANCE_DECIMAL_PLACE = 3
 
+REDIS_URL = config("REDIS_URL")
 
 SEP_LINE = "\n`" + "_" * 30 + "`\n\n"
 SEP_LINE_HTML = "\n" + "_" * 40 + "\n\n"
