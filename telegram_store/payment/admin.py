@@ -20,9 +20,3 @@ class TransactionAdmin(admin.ModelAdmin):
 @admin.register(models.TonCursor)
 class TonCursorAdmin(admin.ModelAdmin):
    readonly_fields = ("key",)
-
-
-@admin.register(models.TonPrice)
-class TonPriceAdmin(admin.ModelAdmin):
-    readonly_fields = ("last_update",)
-    list_display = ("price_per_ton", "price_currency", "last_update")

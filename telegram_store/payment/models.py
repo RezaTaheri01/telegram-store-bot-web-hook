@@ -43,22 +43,3 @@ class TonCursor(models.Model):
         verbose_name = "Ton Cursor"
         verbose_name_plural = "Ton Cursor"
 
-
-class TonPrice(models.Model):
-    price_per_ton = models.DecimalField(
-        max_digits=18, decimal_places=2, null=True)  # snapshot of TON price
-    price_currency = models.CharField(max_length=8, default="usd", null=True)
-    last_update = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"1 TON = {self.price_per_ton} {self.price_currency}"
-
-    class Meta:
-        verbose_name = "Ton Price"
-        verbose_name_plural = "Ton Price"
-
-    # (Optional) enforce only one ton price row exists
-    def save(self, *args, **kwargs):
-        if not self.pk and TonPrice.objects.exists():
-            raise ValueError("Only one TonPrice instance allowed.")
-        return super().save(*args, **kwargs)
