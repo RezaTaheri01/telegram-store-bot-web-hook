@@ -20,16 +20,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-$kp!7e*2sv#%i%=qq(-#pspemkli#ruf_5i04(2q+eeoae_+2h')
+SECRET_KEY = config(
+    "SECRET_KEY", default='django-insecure-$kp!7e*2sv#%i%=qq(-#pspemkli#ruf_5i04(2q+eeoae_+2h')
+
+CSRF_TRUSTED_ORIGINS = [
+    config("SITE_DOMAIN", default="https://"),
+]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
-
-CSRF_TRUSTED_ORIGINS = [
-    config("PAYMENT_DOMAIN"),  # Replace with your Cloudflare tunnel URL
-]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
 
 # Application definition
 INSTALLED_APPS = [
@@ -40,28 +41,27 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # externals apps
-    'encrypted_json_fields',
+    # 'encrypted_json_fields',
     'modeltranslation',
     # internals apps
     'users',
     'payment',
     'products',
-    'bot_module'
 ]
-
-# to check if webhook set correctly:
-# https://api.telegram.org/bot<your-bot-token>/getWebhookInfo
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ROOT_URLCONF = 'telegram_store.urls'
 
@@ -126,15 +126,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-# Change_It
-# Add language here (in both variables)
+# Add language here (in both variables) (Same as Langs in bot_settings.py)
 LANGUAGES = [
-    ('fa', 'فارسی'),  # Persian
     ('en', 'English'),
-    ('du', 'German'),
+    ('ru', 'Russian'),  # Persian
 ]
 # Change_It
-MODELTRANSLATION_LANGUAGES = ('fa', 'en', 'du')  # Same as LANGUAGES
+MODELTRANSLATION_LANGUAGES = ('en', 'ru')  # Same as LANGUAGES
 
 LANGUAGE_CODE = 'en-us'
 
@@ -154,12 +152,28 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = BASE_DIR / 'production_files'
 
+"""
+Currently, uploaded media files (like product images or payment receipts) are stored locally
+in the 'media' directory at the project root (MEDIA_ROOT). They are served at URLs starting 
+with '/media/' (MEDIA_URL).
+
+For production or cloud deployment using remote storage (e.g., Amazon S3, Google Cloud Storage, etc.):
+
+1. Update the `product_payment_detail` function in bot.py to use the remote storage URLs instead 
+   of local paths.
+2. Set `SITE_DOMAIN` in your .env or bot_settings.py to None, since URLs will be fully qualified
+   (e.g., S3 URLs) and not rely on local host paths.
+3. Configure your remote storage backend in Django settings (e.g., using django-storages).
+
+This local setup is mainly for development and testing purposes. Switching to S3 or another
+cloud storage allows your media to be accessible publicly and persist independently of the server.
+"""
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EJF_ENCRYPTION_KEYS = config('ENCRYPTION_KEYS', default='6-QgONW6TUl5rt4Xq8u-wBwPcb15sIYS2CN6d69zueM=')
 
-# Enable WhiteNoise to serve static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
