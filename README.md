@@ -9,18 +9,18 @@ This code is based on [telegram-store-bot](https://github.com/RezaTaheri01/teleg
 ---
 
 ## Table of Contents
-1. [Features ✨](#features)
-2. [Highlights 🚀](#highlights)
-3. [Setup & Installation 🛠️](#setup--installation)
-4. [Bot Commands 📋](#bot-commands)
-5. [Webhook & Redis Overview 🧭](#webhook--redis-overview)
-6. [Database Notes ⚙️](#database-notes)
-7. [Best Practices ✅](#best-practices)
-8. [Architecture Diagram 🧩](#architecture-diagram)
-9. [Security & Privacy 🔐](#security--privacy)
-10. [Testing & Development 🧪](#testing--development)
-11. [License 📜](#license)
-12. [Disclaimer 🤖](#disclaimer)
+- [Features ✨](#features)
+-  [Highlights 🚀](#highlights)
+- [Setup & Installation 🛠️](#setup--installation)
+- [Bot Commands 📋](#bot-commands)
+- [Webhook & Redis Overview 🧭](#webhook--redis-overview)
+- [Database Notes ⚙️](#database-notes)
+- [Best Practices ✅](#best-practices)
+- [Architecture Diagram 🧩](#architecture-diagram)
+- [Security & Privacy 🔐](#security--privacy)
+- [Testing & Development 🧪](#testing--development)
+- [License 📜](#license)
+- [Disclaimer 🤖](#disclaimer)
 
 ---
 
@@ -126,15 +126,60 @@ python manage.py createsuperuser
 uvicorn telegram_store.asgi:application --host 0.0.0.0 --port 8000
 ```
 
-7. **Start Redis server / connect to Redis:**
-  
-- Locally (for testing):
+**Production**: use **Gunicorn** or **Uvicorn** with multiple workers for webhook handling
 
-```bash
-redis-server
+### 7. **Start Redis server / connect to Redis**
+
+Redis is used as a **message queue** between the Django webhook and the async bot worker.
+
+**Flow:**
+
+```
+Telegram → Django webhook → Redis → Bot worker
 ```
 
-Ensure the REDIS_URL in `.env` matches your Redis instance.
+You can also run Redis via **Docker** (cross-platform, recommended).
+
+---
+
+#### Install Redis (Linux / WSL)
+
+```bash
+sudo apt update
+sudo apt install redis-server
+```
+
+Start Redis and enable it on boot:
+
+```bash
+sudo systemctl start redis
+sudo systemctl enable redis
+```
+
+Verify Redis is running:
+
+```bash
+redis-cli ping
+# PONG
+```
+
+---
+
+#### Configure Redis connection
+
+Set Redis connection in `.env`:
+
+```env
+REDIS_URL=redis://localhost:6379/0
+```
+
+---
+
+#### Production
+
+Use a **managed Redis service** or a **dedicated Redis instance**.
+
+Ensure the `REDIS_URL` in `.env` matches your Redis instance and is reachable by **both Django and the bot worker**.
 
 8. **Set Telegram webhook** (one-time):
 
@@ -147,6 +192,8 @@ curl -F "url=https://your-domain.com/webhook/TELEGRAM_WEBHOOK_SECRET/" https://a
 ```bash
 python bot.py
 ```
+
+**Production**: run as a background service, via `nohup`, **systemd**, or **Docker**, so it stays alive and automatically restarts if it crashes.
 
 > The bot will now consume updates from Redis and process background tasks.
 
