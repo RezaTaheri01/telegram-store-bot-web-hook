@@ -33,14 +33,13 @@ def telegram_webhook(request, secret):
     if secret != settings.TELEGRAM_WEBHOOK_SECRET:
         return HttpResponseForbidden()
     
-    print("Get Message")
-
     update_json = request.body.decode("utf-8")
 
     # Push raw update JSON to Redis list
     redis_client.rpush("telegram_updates", update_json)
 
     return HttpResponse("OK")
+
 
 # region Control Bots
 
